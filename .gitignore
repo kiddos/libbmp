@@ -1,0 +1,6 @@
+*.swp
+*.o
+test_*
+*.bmp
+*.png
+*.jpg
