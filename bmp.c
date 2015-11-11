@@ -23,7 +23,7 @@ void _bmp_read_file_header(void* content, bitmap_file_header_t* header)
 	}
 	else
 	{
-		fprintf(stderr, "bitmap_file_header_t null pointer\n");
+		msg_error("bitmap_file_header_t null pointer");
 	}
 }
 
@@ -82,6 +82,10 @@ void _bmp_read_info_header(void* content, bitmap_info_header_t* info_header)
 		memcpy(&info_header->_color_important,
 				content + offset, sizeof(dword_t));
 	}
+	else
+	{
+		msg_error("bitmap_info_header_t null pointer");
+	}
 }
 
 void _bmp_print_info_header(bitmap_info_header_t* header)
@@ -133,4 +137,36 @@ long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp)
 long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp)
 {
 	return bmp->_info_header._xpels_per_meter;
+}
+
+void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh)
+{
+	if (fh)
+	{
+		memcpy(fh, &bmp->_file_header, BITMAP_FILE_HEADER_SIZE);
+	}
+	else
+	{
+		msg_error("input null pointer");
+	}
+}
+
+void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih)
+{
+}
+
+void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size)
+{
+	if (data)
+	{
+		if (data_size != bmp->_info_header._size_image)
+		{
+			msg_warning("input size does not match");
+		}
+		memcpy(data, bmp->data, data_size);
+	}
+	else
+	{
+		msg_error("input null pointer");
+	}
 }
