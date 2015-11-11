@@ -53,7 +53,7 @@ typedef struct bitmap_info_header_t
 typedef struct bitmap_t
 {
 	bitmap_file_header_t _file_header;
-	bitmap_info_header_t _infor_header;
+	bitmap_info_header_t _info_header;
 	void* data;
 } bitmap_t, bitmap;
 
@@ -85,14 +85,14 @@ void _bmp_print_file_header(bitmap_file_header_t* header);
 void _bmp_read_info_header(void* content, bitmap_info_header_t* ih);
 void _bmp_print_info_header(bitmap_info_header_t* header);
 
-void bmp_get_image_size(bitmap_t* bmp);
-void bmp_get_image_overhead(bitmap_t* bmp);
-void bmp_get_image_width(bitmap_t* bmp);
-void bmp_get_image_height(bitmap_t* bmp);
+long_t bmp_get_image_size(bitmap_t* bmp);
+long_t bmp_get_image_overhead(bitmap_t* bmp);
+long_t bmp_get_image_width(bitmap_t* bmp);
+long_t bmp_get_image_height(bitmap_t* bmp);
 
-void _bmp_get_image_bit_count(bitmap_t* bmp);
-void _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp);
-void _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp);
+long_t _bmp_get_image_bit_count(bitmap_t* bmp);
+long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp);
+long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp);
 
 void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh);
 void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih);

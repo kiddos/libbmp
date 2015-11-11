@@ -99,3 +99,38 @@ void _bmp_print_info_header(bitmap_info_header_t* header)
 	printf("_color_used: %d\n", header->_color_used);
 	printf("_color_important: %d\n", header->_color_important);
 }
+
+long_t bmp_get_image_size(bitmap_t* bmp)
+{
+	return bmp->_file_header._size;
+}
+
+long_t bmp_get_image_overhead(bitmap_t* bmp)
+{
+	return bmp->_file_header._offbit;
+}
+
+long_t bmp_get_image_width(bitmap_t* bmp)
+{
+	return bmp->_info_header._width;
+}
+
+long_t bmp_get_image_height(bitmap_t* bmp)
+{
+	return bmp->_info_header._height;
+}
+
+long_t _bmp_get_image_bit_count(bitmap_t* bmp)
+{
+	return bmp->_info_header._bit_count;
+}
+
+long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp)
+{
+	return bmp->_info_header._xpels_per_meter;
+}
+
+long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp)
+{
+	return bmp->_info_header._xpels_per_meter;
+}
