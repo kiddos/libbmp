@@ -4,3 +4,4 @@ test_*
 *.bmp
 *.png
 *.jpg
+test*

@@ -1,29 +1,45 @@
 #include "bmp.h"
 
-void _bmp_read_file_header(void* content, bitmap_file_header_t* header)
+void _bmp_read_file_header(void* content, bitmap_file_header_t* fh)
 {
-	if (header)
+	if (fh)
 	{
 		uint32_t offset = 0;
-		memcpy(&header->_type, content + offset, sizeof(word_t));
+		memcpy(&fh->_type, content + offset, sizeof(word_t));
 
 		offset += sizeof(word_t);
-		memcpy(&header->_size, content + offset, sizeof(dword_t));
+		memcpy(&fh->_size, content + offset, sizeof(dword_t));
 
 		offset += sizeof(dword_t);
-		memcpy(&header->_reserved1, content + offset, sizeof(word_t));
+		memcpy(&fh->_reserved1, content + offset, sizeof(word_t));
 
 		offset += sizeof(word_t);
-		memcpy(&header->_reserved2, content + offset, sizeof(word_t));
+		memcpy(&fh->_reserved2, content + offset, sizeof(word_t));
 
 		offset += sizeof(word_t);
-		memcpy(&header->_offbit, content + offset, sizeof(dword_t));
+		memcpy(&fh->_offbit, content + offset, sizeof(dword_t));
 
 		/*memcpy(header, content, sizeof(bitmap_file_header_t));*/
 	}
 	else
 	{
 		msg_error("bitmap_file_header_t null pointer");
+	}
+}
+
+void _bmp_write_file_header(bitmap_file_header_t* fh, FILE* file)
+{
+	if (file)
+	{
+		fwrite(&fh->_type, sizeof(word_t), 1, file);
+		fwrite(&fh->_size, sizeof(dword_t), 1, file);
+		fwrite(&fh->_reserved1, sizeof(word_t), 1, file);
+		fwrite(&fh->_reserved2, sizeof(word_t), 1, file);
+		fwrite(&fh->_offbit, sizeof(dword_t), 1, file);
+	}
+	else
+	{
+		msg_error("file null pointer");
 	}
 }
 
@@ -37,55 +53,78 @@ void _bmp_print_file_header(bitmap_file_header_t* header)
 	printf("_offbit: %d\n", header->_offbit);
 }
 
-void _bmp_read_info_header(void* content, bitmap_info_header_t* info_header)
+void _bmp_read_info_header(void* content, bitmap_info_header_t* ih)
 {
-	if (info_header)
+	if (ih)
 	{
 		/*memcpy(info_header, content, sizeof(bitmap_info_header_t));*/
 		uint32_t offset = 0;
-		memcpy(&info_header->_size, content + offset, sizeof(dword_t));
+		memcpy(&ih->_size, content + offset, sizeof(dword_t));
 
 		offset += sizeof(dword_t);
-		memcpy(&info_header->_width, content + offset, sizeof(long32_t));
+		memcpy(&ih->_width, content + offset, sizeof(long32_t));
 
 		offset += sizeof(long32_t);
-		memcpy(&info_header->_height, content + offset, sizeof(long32_t));
+		memcpy(&ih->_height, content + offset, sizeof(long32_t));
 
 		offset += sizeof(long32_t);
-		memcpy(&info_header->_planes, content + offset, sizeof(word_t));
+		memcpy(&ih->_planes, content + offset, sizeof(word_t));
 
 		offset += sizeof(word_t);
-		memcpy(&info_header->_bit_count,
+		memcpy(&ih->_bit_count,
 				content + offset, sizeof(word_t));
 
 		offset += sizeof(word_t);
-		memcpy(&info_header->_compression,
+		memcpy(&ih->_compression,
 				content + offset, sizeof(dword_t));
 
 		offset += sizeof(dword_t);
-		memcpy(&info_header->_size_image,
+		memcpy(&ih->_size_image,
 				content + offset, sizeof(dword_t));
 
 		offset += sizeof(dword_t);
-		memcpy(&info_header->_xpels_per_meter,
+		memcpy(&ih->_xpels_per_meter,
 				content + offset, sizeof(long32_t));
 
 		offset += sizeof(long32_t);
-		memcpy(&info_header->_ypels_per_meter,
+		memcpy(&ih->_ypels_per_meter,
 				content + offset, sizeof(long32_t));
 
 		offset += sizeof(long32_t);
-		memcpy(&info_header->_color_used,
+		memcpy(&ih->_color_used,
 				content + offset, sizeof(dword_t));
 
 		offset += sizeof(dword_t);
-		memcpy(&info_header->_color_important,
+		memcpy(&ih->_color_important,
 				content + offset, sizeof(dword_t));
 	}
 	else
 	{
 		msg_error("bitmap_info_header_t null pointer");
 	}
+}
+
+void _bmp_write_info_header(bitmap_info_header_t* ih, FILE* file)
+{
+	if (file)
+	{
+		fwrite(&ih->_size, sizeof(dword_t), 1, file);
+		fwrite(&ih->_width, sizeof(long_t), 1, file);
+		fwrite(&ih->_height, sizeof(long_t), 1, file);
+		fwrite(&ih->_planes, sizeof(word_t), 1, file);
+		fwrite(&ih->_bit_count, sizeof(word_t), 1, file);
+		fwrite(&ih->_compression, sizeof(dword_t), 1, file);
+		fwrite(&ih->_size_image, sizeof(dword_t), 1, file);
+		fwrite(&ih->_xpels_per_meter, sizeof(long_t), 1, file);
+		fwrite(&ih->_ypels_per_meter, sizeof(long_t), 1, file);
+		fwrite(&ih->_color_used, sizeof(dword_t), 1, file);
+		fwrite(&ih->_color_important, sizeof(dword_t), 1, file);
+	}
+	else
+	{
+		msg_error("input file null pointer");
+	}
+
 }
 
 void _bmp_print_info_header(bitmap_info_header_t* header)
@@ -205,64 +244,91 @@ void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size)
 bitmap_t* bmp_read(const char* bmp_name)
 {
 	FILE* file = fopen(bmp_name, "r");
-	if (!file)
+	if (file)
+	{
+		bitmap_t* bmp = (bitmap_t*) malloc(sizeof(bitmap_t));
+		unsigned int i;
+		char fh_buf[1024] = {'\0'};
+		char ih_buf[1024] = {'\0'};
+
+		for (i = 0 ; i < BITMAP_FILE_HEADER_SIZE ; i ++)
+		{
+			fh_buf[i] = fgetc(file);
+#ifdef DEBUG
+			printf("%04u ", fh_buf[i]);
+#endif
+		}
+#ifdef DEBUG
+		printf("\n");
+#endif
+
+		for (i = 0 ; i < BITMAP_INFO_HEADER_SIZE ; i ++)
+		{
+			ih_buf[i] = fgetc(file);
+#ifdef DEBUG
+			printf("%04u ", ih_buf[i]);
+#endif
+		}
+#ifdef DEBUG
+		printf("\n");
+#endif
+
+		// read file/info header
+		_bmp_read_file_header(fh_buf, &bmp->_file_header);
+		_bmp_read_info_header(ih_buf, &bmp->_info_header);
+
+#ifdef DEBUG
+		_bmp_print_file_header(&bmp->_file_header);
+		_bmp_print_info_header(&bmp->_info_header);
+#endif
+
+		size_t size = _bmp_get_data_size(&bmp->_file_header);
+		bmp->data = malloc(size);
+
+		// read data
+		for (i = 0 ; i < size ; i ++)
+		{
+			((unsigned char*)bmp->data)[i] = fgetc(file);
+		}
+
+#ifdef DEBUG
+		_bmp_print_data(bmp->data, size);
+#endif
+
+		return bmp;
+	}
+	else
 	{
 		msg_error("fail to read file");
 		return NULL;
 	}
 
-	bitmap_t* bmp = (bitmap_t*) malloc(sizeof(bitmap_t));
-	unsigned int i;
-	char fh_buf[1024] = {'\0'};
-	char ih_buf[1024] = {'\0'};
-
-	for (i = 0 ; i < BITMAP_FILE_HEADER_SIZE ; i ++)
-	{
-		fh_buf[i] = fgetc(file);
-#ifdef DEBUG
-		printf("%04u ", fh_buf[i]);
-#endif
-	}
-#ifdef DEBUG
-	printf("\n");
-#endif
-
-	for (i = 0 ; i < BITMAP_INFO_HEADER_SIZE ; i ++)
-	{
-		ih_buf[i] = fgetc(file);
-#ifdef DEBUG
-		printf("%04u ", ih_buf[i]);
-#endif
-	}
-#ifdef DEBUG
-	printf("\n");
-#endif
-
-	// read file/info header
-	_bmp_read_file_header(fh_buf, &bmp->_file_header);
-	_bmp_read_info_header(ih_buf, &bmp->_info_header);
-
-#ifdef DEBUG
-	_bmp_print_file_header(&bmp->_file_header);
-	_bmp_print_info_header(&bmp->_info_header);
-#endif
-
-	size_t size = _bmp_get_data_size(&bmp->_file_header);
-	bmp->data = malloc(size);
-
-	// read data
-	for (i = 0 ; i < size ; i ++)
-	{
-		((unsigned char*)bmp->data)[i] = fgetc(file);
-	}
-
-#ifdef DEBUG
-	_bmp_print_data(bmp->data, size);
-#endif
-
-	return bmp;
 }
 
-void bmp_write(const char* bmp_name)
+void bmp_write(bitmap_t* bmp, const char* bmp_name)
 {
+	FILE* file = fopen(bmp_name, "wb");
+	if (file)
+	{
+		if (bmp)
+		{
+			_bmp_write_file_header(&bmp->_file_header, file);
+			_bmp_write_info_header(&bmp->_info_header, file);
+
+			size_t data_size = _bmp_get_data_size(&bmp->_file_header);
+			size_t i;
+			for (i = 0 ; i < data_size ; i ++)
+				fputc(((unsigned char*)bmp->data)[i], file);
+
+			fclose(file);
+		}
+		else
+		{
+			msg_error("input bmp null pointer");
+		}
+	}
+	else
+	{
+		msg_error("fail to open new file");
+	}
 }
