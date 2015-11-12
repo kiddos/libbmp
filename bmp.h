@@ -86,6 +86,9 @@ void _bmp_read_file_header(void* content, bitmap_file_header_t* fh);
 void _bmp_print_file_header(bitmap_file_header_t* header);
 void _bmp_read_info_header(void* content, bitmap_info_header_t* ih);
 void _bmp_print_info_header(bitmap_info_header_t* header);
+void _bmp_read_data(void* content, void* dst, size_t size);
+void _bmp_print_data(void* dst, size_t size);
+long_t _bmp_get_data_size(bitmap_file_header_t* ih);
 
 long_t bmp_get_image_size(bitmap_t* bmp);
 long_t bmp_get_image_overhead(bitmap_t* bmp);
@@ -99,5 +102,8 @@ long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp);
 void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh);
 void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih);
 void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size);
+
+bitmap_t* bmp_read(const char* bmp_name);
+void bmp_write(const char* bmp_name);
 
 #endif /* end of include guard: BMP_H */

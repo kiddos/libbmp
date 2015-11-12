@@ -104,6 +104,29 @@ void _bmp_print_info_header(bitmap_info_header_t* header)
 	printf("_color_important: %d\n", header->_color_important);
 }
 
+void _bmp_read_data(void* content, void* dst, size_t size)
+{
+	// TODO
+	// might have order issue
+	memcpy(dst, content, size);
+}
+
+void _bmp_print_data(void* dst, size_t size)
+{
+	unsigned int i;
+	printf("data:\n");
+	for (i = 0 ; i < size *.1 ; i ++)
+	{
+		printf("%4d", ((unsigned char*)dst)[i]);
+	}
+	printf("\n");
+}
+
+long_t _bmp_get_data_size(bitmap_file_header_t* fh)
+{
+	return fh->_size - fh->_offbit;
+}
+
 long_t bmp_get_image_size(bitmap_t* bmp)
 {
 	return bmp->_file_header._size;
@@ -153,6 +176,14 @@ void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh)
 
 void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih)
 {
+	if (ih)
+	{
+		memcpy(ih, &bmp->_info_header, BITMAP_INFO_HEADER_SIZE);
+	}
+	else
+	{
+		msg_error("input null pointer");
+	}
 }
 
 void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size)
@@ -169,4 +200,69 @@ void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size)
 	{
 		msg_error("input null pointer");
 	}
+}
+
+bitmap_t* bmp_read(const char* bmp_name)
+{
+	FILE* file = fopen(bmp_name, "r");
+	if (!file)
+	{
+		msg_error("fail to read file");
+		return NULL;
+	}
+
+	bitmap_t* bmp = (bitmap_t*) malloc(sizeof(bitmap_t));
+	unsigned int i;
+	char fh_buf[1024] = {'\0'};
+	char ih_buf[1024] = {'\0'};
+
+	for (i = 0 ; i < BITMAP_FILE_HEADER_SIZE ; i ++)
+	{
+		fh_buf[i] = fgetc(file);
+#ifdef DEBUG
+		printf("%04u ", fh_buf[i]);
+#endif
+	}
+#ifdef DEBUG
+	printf("\n");
+#endif
+
+	for (i = 0 ; i < BITMAP_INFO_HEADER_SIZE ; i ++)
+	{
+		ih_buf[i] = fgetc(file);
+#ifdef DEBUG
+		printf("%04u ", ih_buf[i]);
+#endif
+	}
+#ifdef DEBUG
+	printf("\n");
+#endif
+
+	// read file/info header
+	_bmp_read_file_header(fh_buf, &bmp->_file_header);
+	_bmp_read_info_header(ih_buf, &bmp->_info_header);
+
+#ifdef DEBUG
+	_bmp_print_file_header(&bmp->_file_header);
+	_bmp_print_info_header(&bmp->_info_header);
+#endif
+
+	size_t size = _bmp_get_data_size(&bmp->_file_header);
+	bmp->data = malloc(size);
+
+	// read data
+	for (i = 0 ; i < size ; i ++)
+	{
+		((unsigned char*)bmp->data)[i] = fgetc(file);
+	}
+
+#ifdef DEBUG
+	_bmp_print_data(bmp->data, size);
+#endif
+
+	return bmp;
+}
+
+void bmp_write(const char* bmp_name)
+{
 }
