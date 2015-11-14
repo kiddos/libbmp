@@ -152,7 +152,7 @@ void _bmp_read_data(void* content, void* dst, size_t size)
 
 void _bmp_print_data(void* dst, size_t size)
 {
-	unsigned int i;
+	size_t i;
 	printf("data:\n");
 	for (i = 0 ; i < size *.1 ; i ++)
 	{
@@ -247,7 +247,7 @@ bitmap_t* bmp_read(const char* bmp_name)
 	if (file)
 	{
 		bitmap_t* bmp = (bitmap_t*) malloc(sizeof(bitmap_t));
-		unsigned int i;
+		size_t i;
 		char fh_buf[1024] = {'\0'};
 		char ih_buf[1024] = {'\0'};
 
