@@ -154,7 +154,7 @@ void _bmp_print_data(void* dst, size_t size)
 {
 	size_t i;
 	printf("data:\n");
-	for (i = 0 ; i < size *.1 ; i ++)
+	for (i = 0 ; i < size * 0.01 ; i ++)
 	{
 		printf("%4d", ((unsigned char*)dst)[i]);
 	}
@@ -163,7 +163,12 @@ void _bmp_print_data(void* dst, size_t size)
 
 long_t _bmp_get_data_size(bitmap_file_header_t* fh)
 {
-	return fh->_size - fh->_offbit;
+	return fh->_size - BITMAP_FILE_HEADER_SIZE - BITMAP_INFO_HEADER_SIZE;
+}
+
+long_t _bmp_get_offset_size(bitmap_file_header_t* fh)
+{
+	return fh->_offbit - BITMAP_FILE_HEADER_SIZE - BITMAP_INFO_HEADER_SIZE;
 }
 
 long_t bmp_get_image_size(bitmap_t* bmp)
@@ -303,6 +308,13 @@ bitmap_t* bmp_read(const char* bmp_name)
 		return NULL;
 	}
 
+}
+
+bitmap_t* bmp_create(long_t width, long_t height, void* data, size_t size)
+{
+	bitmap_t* bmp = malloc(sizeof(bitmap_t));
+
+	return bmp;
 }
 
 void bmp_write(bitmap_t* bmp, const char* bmp_name)
