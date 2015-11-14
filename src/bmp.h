@@ -59,6 +59,9 @@ typedef struct bitmap_t
 	bitmap_file_header_t _file_header;
 	bitmap_info_header_t _info_header;
 	void* data;
+	size_t data_size;
+	long_t width;
+	long_t height;
 } bitmap_t, bitmap;
 
 /***
