@@ -8,6 +8,7 @@
 #include "msg.h"
 
 // basic data type definitions
+typedef unsigned char uchar_t;
 #if defined(__unix__)
 // for unix like
 typedef unsigned short word_t;
@@ -212,7 +213,8 @@ void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih);
 void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size);
 
 bitmap_t* bmp_read(const char* bmp_name);
-bitmap_t* bmp_create(long_t width, long_t height, void* data, size_t size);
+bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
+		void* data, size_t size);
 void bmp_write(bitmap_t* bmp, const char* bmp_name);
 
 #endif /* end of include guard: BMP_H */
