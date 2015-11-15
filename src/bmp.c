@@ -230,7 +230,7 @@ void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih)
 	}
 }
 
-void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size)
+void bmp_copy_image_data(bitmap_t* bmp, void* data, size_t data_size)
 {
 	if (data)
 	{
@@ -248,6 +248,8 @@ void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size)
 
 bitmap_t* bmp_read(const char* bmp_name)
 {
+	MSG_IS_NULL_STRING(bmp_name, NULL);
+
 	FILE* file = fopen(bmp_name, "r");
 	if (file)
 	{
@@ -317,45 +319,55 @@ bitmap_t* bmp_read(const char* bmp_name)
 bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 		void* data, size_t size)
 {
-	size_t i;
-	bitmap_t* bmp = malloc(sizeof(bitmap_t));
-	// bitmap file header
-	bmp->_file_header._type = BITMAP_TYPE;
-	bmp->_file_header._size = size + BITMAP_FILE_HEADER_SIZE +
-			BITMAP_INFO_HEADER_SIZE;
-	bmp->_file_header._reserved1 = 0;
-	bmp->_file_header._reserved2 = 0;
-	bmp->_file_header._offbit = BITMAP_FILE_HEADER_SIZE +
-			BITMAP_INFO_HEADER_SIZE;
+	if (data)
+	{
+		size_t i;
+		bitmap_t* bmp = malloc(sizeof(bitmap_t));
+		// bitmap file header
+		bmp->_file_header._type = BITMAP_TYPE;
+		bmp->_file_header._size = size + BITMAP_FILE_HEADER_SIZE +
+				BITMAP_INFO_HEADER_SIZE;
+		bmp->_file_header._reserved1 = 0;
+		bmp->_file_header._reserved2 = 0;
+		bmp->_file_header._offbit = BITMAP_FILE_HEADER_SIZE +
+				BITMAP_INFO_HEADER_SIZE;
 
-	// bitmap info header
-	bmp->_info_header._size = BITMAP_INFO_HEADER_SIZE;
-	bmp->_info_header._width = width;
-	bmp->_info_header._planes = 1;
-	// use default compression RGB
-	bmp->_info_header._compression = BITMAP_COMPRESSION_RGB;
-	bmp->_info_header._bit_count = bit_count;
-	bmp->_info_header._size_image = size;
-	// use default 0 for x/y pixels per meter
-	bmp->_info_header._xpels_per_meter = 0;
-	bmp->_info_header._ypels_per_meter = 0;
-	// use default 256 color
-	bmp->_info_header._color_used = 256;
-	// default all color required
-	bmp->_info_header._color_important = 0;
+		// bitmap info header
+		bmp->_info_header._size = BITMAP_INFO_HEADER_SIZE;
+		bmp->_info_header._width = width;
+		bmp->_info_header._planes = 1;
+		// use default compression RGB
+		bmp->_info_header._compression = BITMAP_COMPRESSION_RGB;
+		bmp->_info_header._bit_count = bit_count;
+		bmp->_info_header._size_image = size;
+		// use default 0 for x/y pixels per meter
+		bmp->_info_header._xpels_per_meter = 0;
+		bmp->_info_header._ypels_per_meter = 0;
+		// use default 256 color
+		bmp->_info_header._color_used = 256;
+		// default all color required
+		bmp->_info_header._color_important = 0;
 
-	// other useful member
-	bmp->data_size = size;
-	bmp->width = width;
-	bmp->height = height;
+		// other useful member
+		bmp->data_size = size;
+		bmp->width = width;
+		bmp->height = height;
 
-	for (i = 0 ; i < size ; i ++)
-		((uchar_t*)bmp->data)[i] = ((uchar_t*) data)[i];
-	return bmp;
+		for (i = 0 ; i < size ; i ++)
+			((uchar_t*)bmp->data)[i] = ((uchar_t*) data)[i];
+		return bmp;
+	}
+	else
+	{
+		msg_error("data null pointer");
+		return NULL;
+	}
 }
 
 void bmp_write(bitmap_t* bmp, const char* bmp_name)
 {
+	MSG_IS_NULL_STRING(bmp_name, );
+
 	FILE* file = fopen(bmp_name, "wb");
 	if (file)
 	{
@@ -378,6 +390,6 @@ void bmp_write(bitmap_t* bmp, const char* bmp_name)
 	}
 	else
 	{
-		msg_error("fail to open new file");
+		msg_error_line("fail to open new file:", 1, bmp_name);
 	}
 }
