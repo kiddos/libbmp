@@ -7,6 +7,44 @@ PREFIX = /usr/local
 
 TARGET = test_bmp
 OBJECTS = test.o bmp.o msg.o
+TARGET_LIB :=
+
+ifeq ($(OS),Windows_NT)
+	TARGET_LIB = libbmp.dll
+	CCFLAGS += -D WIN32
+
+	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+        CCFLAGS += -D AMD64
+    endif
+    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+        CCFLAGS += -D IA32
+    endif
+else
+	TARGET_LIB = libbmp.so
+    UNAME_S := $(shell uname -s)
+
+    ifeq ($(UNAME_S),Linux)
+		CCFLAGS += -D LINUX
+		# recipe
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        CCFLAGS += -D OSX
+		# recipe
+    endif
+    UNAME_P := $(shell uname -p)
+    ifeq ($(UNAME_P),x86_64)
+        CCFLAGS += -D AMD64
+		# recipe
+    endif
+    ifneq ($(filter %86,$(UNAME_P)),)
+        CCFLAGS += -D IA32
+		# recipe
+    endif
+    ifneq ($(filter arm%,$(UNAME_P)),)
+        CCFLAGS += -D ARM
+		# recipe
+    endif
+endif
 
 all: $(TARGET)
 
