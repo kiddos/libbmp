@@ -239,11 +239,11 @@ long_t bmp_get_image_size(bitmap_t* bmp);
 long_t bmp_get_image_overhead(bitmap_t* bmp);
 long_t bmp_get_image_width(bitmap_t* bmp);
 long_t bmp_get_image_height(bitmap_t* bmp);
-void* bmp_get_image_data(bitmap_t* bmp);
 
 void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh);
 void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih);
-void bmp_get_image_data(bitmap_t* bmp, void* data, size_t data_size);
+void* bmp_get_image_data(bitmap_t* bmp);
+void bmp_copy_image_data(bitmap_t* bmp, void* data, size_t data_size);
 
 bitmap_t* bmp_read(const char* bmp_name);
 bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
@@ -257,7 +257,7 @@ bool_t bmp_set_x_pixel_per_meter(bitmap_t* bmp, long_t xpels_per_meter);
 bool_t bmp_set_y_pixel_per_meter(bitmap_t* bmp, long_t ypels_per_meter);
 bool_t bmp_set_color_used(bitmap_t* bmp, dword_t color_used);
 bool_t bmp_set_color_important(bitmap_t* bmp, dword_t color_important);
-bool_t bmp_set_image_data(bitmap_t* bmp, void* data);
+bool_t bmp_set_data(bitmap_t* bmp, void* data);
 void bmp_destroy(bitmap_t* bmp);
 void bmp_write(bitmap_t* bmp, const char* bmp_name);
 
