@@ -176,8 +176,34 @@ typedef enum
 	BITMAP_BIT_COUNT32   =   32
 } bit_count_t;
 
+/*** Compression types
+ *	RGB:	An uncompressed format.
+ *
+ *	RLE8:	A run-length encoded (RLE) format for
+ *			bitmaps with 8 bpp. The compression format
+ *			is a 2-byte format consisting of a count
+ *			byte followed by a byte containing a
+ *			color index.
+ *
+ *	RLE4:	An RLE format for bitmaps with 4 bpp.
+ *			The compression format is a 2-byte format
+ *			consisting of a count byte followed by two
+ *			word-length color indexes.
+ *
+ *	BITFIELDS:	Specifies that the bitmap is not compressed
+ *				and that the color table consists of three
+ *				DWORD color masks that specify the red, green,
+ *				and blue components, respectively, of each
+ *				pixel. This is valid when used with 16-
+ *				and 32-bpp bitmaps.
+ *
+ * JPEG:	Indicates that the image is a JPEG image.
+ *
+ * PNG:		Indicates that the image is a PNG image.
+ */
 // TODO
 // there should be more compression type
+// only support RGB for now
 typedef enum
 {
 	BITMAP_COMPRESSION_RGB         =   0,
