@@ -300,6 +300,10 @@ bitmap_t* bmp_read(const char* bmp_name)
 		_bmp_print_data(bmp->data, size);
 #endif
 
+		// fill in other useful members
+		bmp->width = bmp_get_image_width(bmp);
+		bmp->height = bmp_get_image_height(bmp);
+		bmp->data_size = bmp_get_image_size(bmp);
 		return bmp;
 	}
 	else
@@ -339,6 +343,11 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 	bmp->_info_header._color_used = 256;
 	// default all color required
 	bmp->_info_header._color_important = 0;
+
+	// other useful member
+	bmp->data_size = size;
+	bmp->width = width;
+	bmp->height = height;
 
 	for (i = 0 ; i < size ; i ++)
 		((uchar_t*)bmp->data)[i] = ((uchar_t*) data)[i];
