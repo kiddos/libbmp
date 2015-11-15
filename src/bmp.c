@@ -18,8 +18,6 @@ void _bmp_read_file_header(void* content, bitmap_file_header_t* fh)
 
 		offset += sizeof(word_t);
 		memcpy(&fh->_offbit, content + offset, sizeof(dword_t));
-
-		/*memcpy(header, content, sizeof(bitmap_file_header_t));*/
 	}
 	else
 	{
@@ -57,7 +55,6 @@ void _bmp_read_info_header(void* content, bitmap_info_header_t* ih)
 {
 	if (ih)
 	{
-		/*memcpy(info_header, content, sizeof(bitmap_info_header_t));*/
 		uint32_t offset = 0;
 		memcpy(&ih->_size, content + offset, sizeof(dword_t));
 
@@ -438,7 +435,9 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 		bmp->height = height;
 
 		for (i = 0 ; i < size ; i ++)
+		{
 			((uchar_t*)bmp->data)[i] = ((uchar_t*) data)[i];
+		}
 		return bmp;
 	}
 	else
@@ -463,7 +462,9 @@ void bmp_write(bitmap_t* bmp, const char* bmp_name)
 			size_t data_size = _bmp_get_data_size(&bmp->_file_header);
 			size_t i;
 			for (i = 0 ; i < data_size ; i ++)
+			{
 				fputc(((uchar_t*)bmp->data)[i], file);
+			}
 
 			fclose(file);
 		}
