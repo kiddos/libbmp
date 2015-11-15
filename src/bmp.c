@@ -143,67 +143,151 @@ void _bmp_print_info_header(bitmap_info_header_t* header)
 	printf("_color_important: %d\n", header->_color_important);
 }
 
-void _bmp_read_data(void* content, void* dst, size_t size)
+void _bmp_read_data(void* src, void* dst, size_t size)
 {
-	// TODO
-	// might have order issue
-	memcpy(dst, content, size);
+	if (src && dst)
+	{
+		if (dst)
+		{
+			memcpy(dst, src, size);
+		}
+		else
+		{
+			msg_error("null dst pointer");
+		}
+	}
+	else
+	{
+		msg_error("null src pointer");
+	}
 }
 
-void _bmp_print_data(void* dst, size_t size)
+void _bmp_print_data(void* data, size_t size)
 {
 	size_t i;
-	printf("data:\n");
-	for (i = 0 ; i < size * 0.01 ; i ++)
+	if (data)
 	{
-		printf("%4d", ((uchar_t*)dst)[i]);
+		printf("data:\n");
+		for (i = 0 ; i < size * 0.01 ; i ++)
+		{
+			printf("%4d", ((uchar_t*)data)[i]);
+		}
+		printf("\n");
 	}
-	printf("\n");
+	else
+	{
+		msg_error("null data pointer");
+	}
 }
 
 long_t _bmp_get_data_size(bitmap_file_header_t* fh)
 {
-	return fh->_size - BITMAP_FILE_HEADER_SIZE - BITMAP_INFO_HEADER_SIZE;
+	if (fh)
+	{
+		return fh->_size - BITMAP_FILE_HEADER_SIZE -
+				BITMAP_INFO_HEADER_SIZE;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t _bmp_get_offset_size(bitmap_file_header_t* fh)
 {
-	return fh->_offbit - BITMAP_FILE_HEADER_SIZE - BITMAP_INFO_HEADER_SIZE;
+	if (fh)
+	{
+		return fh->_offbit - BITMAP_FILE_HEADER_SIZE -
+				BITMAP_INFO_HEADER_SIZE;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t bmp_get_image_size(bitmap_t* bmp)
 {
-	return bmp->_file_header._size;
+	if (bmp)
+	{
+		return bmp->_file_header._size;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t bmp_get_image_overhead(bitmap_t* bmp)
 {
-	return bmp->_file_header._offbit;
+	if (bmp)
+	{
+		return bmp->_file_header._offbit;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t bmp_get_image_width(bitmap_t* bmp)
 {
-	return bmp->_info_header._width;
+	if (bmp)
+	{
+		return bmp->_info_header._width;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t bmp_get_image_height(bitmap_t* bmp)
 {
-	return bmp->_info_header._height;
+	if (bmp)
+	{
+		return bmp->_info_header._height;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t _bmp_get_image_bit_count(bitmap_t* bmp)
 {
-	return bmp->_info_header._bit_count;
+	if (bmp)
+	{
+		return bmp->_info_header._bit_count;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp)
 {
-	return bmp->_info_header._xpels_per_meter;
+	if (bmp)
+	{
+		return bmp->_info_header._xpels_per_meter;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp)
 {
-	return bmp->_info_header._xpels_per_meter;
+	if (bmp)
+	{
+		return bmp->_info_header._xpels_per_meter;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh)
