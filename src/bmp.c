@@ -203,6 +203,42 @@ long_t _bmp_get_offset_size(bitmap_file_header_t* fh)
 	}
 }
 
+long_t _bmp_get_image_bit_count(bitmap_t* bmp)
+{
+	if (bmp)
+	{
+		return bmp->_info_header._bit_count;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp)
+{
+	if (bmp)
+	{
+		return bmp->_info_header._xpels_per_meter;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp)
+{
+	if (bmp)
+	{
+		return bmp->_info_header._xpels_per_meter;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 long_t bmp_get_image_size(bitmap_t* bmp)
 {
 	if (bmp)
@@ -251,42 +287,6 @@ long_t bmp_get_image_height(bitmap_t* bmp)
 	}
 }
 
-long_t _bmp_get_image_bit_count(bitmap_t* bmp)
-{
-	if (bmp)
-	{
-		return bmp->_info_header._bit_count;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp)
-{
-	if (bmp)
-	{
-		return bmp->_info_header._xpels_per_meter;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp)
-{
-	if (bmp)
-	{
-		return bmp->_info_header._xpels_per_meter;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
 void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh)
 {
 	if (fh)
@@ -308,6 +308,19 @@ void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih)
 	else
 	{
 		msg_error("input null pointer");
+	}
+}
+
+void* bmp_get_image_data(bitmap_t* bmp)
+{
+	if (bmp)
+	{
+		return bmp->data;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return NULL;
 	}
 }
 
@@ -444,6 +457,46 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 	{
 		msg_error("data null pointer");
 		return NULL;
+	}
+}
+
+bitmap_t* bmp_produce_copy(bitmap_t* bmp)
+{
+	bitmap_t* copy = malloc(sizeof(bitmap_t));
+	if (bmp)
+	{
+		if (copy)
+		{
+			memcpy(copy, bmp, sizeof(bitmap_t));
+			return copy;
+		}
+		else
+		{
+			msg_error("fail to malloc new bitmap");
+			return NULL;
+		}
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return NULL;
+	}
+}
+
+bool_t bmp_set_width(bitmap_t* bmp, long_t width)
+{
+	if (bmp)
+	{
+		bmp->width = width;
+		bmp->_info_header._width = width;
+		// TODO
+		// need to implement data expansion
+		return true;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
 	}
 }
 
