@@ -248,7 +248,7 @@ void bmp_copy_image_data(bitmap_t* bmp, void* data, size_t data_size);
 bitmap_t* bmp_read(const char* bmp_name);
 bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 		void* data, size_t size);
-bitmap_t* bmp_copy(bitmap_t* bmp);
+bitmap_t* bmp_produce_copy(bitmap_t* bmp);
 bool_t bmp_set_width(bitmap_t* bmp, long_t width);
 bool_t bmp_set_height(bitmap_t* bmp, long_t height);
 bool_t bmp_set_bit_count(bitmap_t* bmp, bit_count_t bit_count);
