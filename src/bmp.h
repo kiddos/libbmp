@@ -228,7 +228,7 @@ void _bmp_read_info_header(void* content, bitmap_info_header_t* ih);
 void _bmp_write_info_header(bitmap_info_header_t* ih, FILE* file);
 void _bmp_print_info_header(bitmap_info_header_t* header);
 void _bmp_read_data(void* content, void* dst, size_t size);
-void _bmp_print_data(void* dst, size_t size);
+void _bmp_print_data(void* data, size_t row_size, size_t height);
 long_t _bmp_get_data_size(bitmap_file_header_t* fh);
 long_t _bmp_get_offset_size(bitmap_file_header_t* fh);
 
