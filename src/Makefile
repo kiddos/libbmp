@@ -1,16 +1,15 @@
 CC = gcc
-CFLAGS = -g -Wall -Wextra -rdynamic
+CFLAGS = -g -Wall -Wextra -rdynamic -fPIC
 EXTRA = -DDEBUG
 LIBS = -lm
 
 PREFIX = /usr/local
 
-TARGET = test_bmp
-OBJECTS = test.o bmp.o msg.o
-TARGET_LIB :=
+TARGET =
+OBJECTS = bmp.o msg.o
 
 ifeq ($(OS),Windows_NT)
-	TARGET_LIB = libbmp.dll
+	TARGET = libbmp.dll
 	CCFLAGS += -D WIN32
 
 	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
@@ -20,7 +19,7 @@ ifeq ($(OS),Windows_NT)
         CCFLAGS += -D IA32
     endif
 else
-	TARGET_LIB = libbmp.so
+	TARGET = libbmp.so
     UNAME_S := $(shell uname -s)
 
     ifeq ($(UNAME_S),Linux)
@@ -48,11 +47,11 @@ endif
 
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $(OBJECTS) $(LIBS)
+test:
+	$(MAKE) -C test all
 
-test.o: test.c bmp.h
-	$(CC) $(CFLAGS) $(EXTRA) -c test.c
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -shared -o ../$@ $(OBJECTS) $(LIBS)
 
 bmp.o: bmp.c bmp.h
 	$(CC) $(CFLAGS) $(EXTRA) -c bmp.c
@@ -73,4 +72,4 @@ install: all
 uninstall:
 	rm -f $(PREFIX)/bin/$(TARGET)
 
-.PHONY: all clean install uninstall
+.PHONY: all clean install uninstall test
