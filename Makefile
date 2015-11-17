@@ -7,4 +7,7 @@ clean:
 test:
 	$(MAKE) -C src $@
 
-.PHONY: all clean test
+install:
+	$(MAKE) -C src $@
+
+.PHONY: all clean test install
