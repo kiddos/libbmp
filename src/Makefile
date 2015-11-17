@@ -6,6 +6,7 @@ LIBS = -lm
 PREFIX = /usr/local
 
 TARGET =
+TARGET_INCLUDE = bmp.h
 OBJECTS = bmp.o msg.o
 
 ifeq ($(OS),Windows_NT)
@@ -51,7 +52,7 @@ test:
 	$(MAKE) -C test all
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -shared -o ../$@ $(OBJECTS) $(LIBS)
+	$(CC) $(CFLAGS) -shared -o $@ $(OBJECTS) $(LIBS)
 
 bmp.o: bmp.c bmp.h
 	$(CC) $(CFLAGS) $(EXTRA) -c bmp.c
@@ -65,11 +66,14 @@ clean:
 
 # install
 install: all
-	install -d $(DESTDIR)/$(PREFIX)/bin
-	install $(TARGET) $(DESTDIR)/$(PREFIX)/bin
+	install -d $(DESTDIR)/$(PREFIX)/lib
+	install $(TARGET) $(DESTDIR)/$(PREFIX)/lib
+	install -d $(DESTDIR)/$(PREFIX)/include
+	install $(TARGET_INCLUDE) $(DESTDIR)/$(PREFIX)/include
 
 # uninstall
 uninstall:
-	rm -f $(PREFIX)/bin/$(TARGET)
+	rm -f $(DESTDIR)/$(PREFIX)/lib/$(TARGET)
+	rm -f $(DESTDIR)/$(PREFIX)/include/$(TARGET_INCLUDE)
 
 .PHONY: all clean install uninstall test
