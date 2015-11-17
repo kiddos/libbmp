@@ -6,7 +6,7 @@
 
 // macro check for null string and immediately return
 
-#define MSG_IS_NULL_STRING(str, status)       \
+#define MSG_IS_NULL_STRING(str, status)   \
 	if (!str)                             \
 	{                                     \
 		msg_error("null string pointer"); \
