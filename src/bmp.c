@@ -167,6 +167,7 @@ void _bmp_print_data(void* data, size_t size)
 		printf("data:\n");
 		for (i = 0 ; i < size * 0.01 ; i ++)
 		{
+			if (i % 30 == 0) printf("\n");
 			printf("%4d", ((uchar_t*)data)[i]);
 		}
 		printf("\n");
@@ -340,6 +341,43 @@ void bmp_copy_image_data(bitmap_t* bmp, void* data, size_t data_size)
 	}
 }
 
+// TODO
+// need to implement PNG/JPEG
+static size_t _bmp_get_row_size(long_t width, bit_count_t bit_count)
+{
+	size_t i, row_size = 0;
+	switch (bit_count)
+	{
+	case 0:
+		break;
+	case 1:
+		row_size = width / 8;
+		break;
+	case 4:
+		row_size = width / 2;
+		break;
+	case 8:
+		row_size = width;
+		break;
+	case 16:
+		row_size = width * 2;
+		break;
+	case 24:
+		row_size = width * 3;
+		break;
+	case 32:
+		row_size = width * 4;
+		break;
+	}
+
+	for (i = 0 ; i < 4 ; i ++)
+	{
+		if ((row_size + i) % 4 == 0)
+			return row_size + i;
+	}
+	return row_size;
+}
+
 bitmap_t* bmp_read(const char* bmp_name)
 {
 	MSG_IS_NULL_STRING(bmp_name, NULL);
@@ -370,15 +408,13 @@ bitmap_t* bmp_read(const char* bmp_name)
 			printf("%04u ", ih_buf[i]);
 #endif
 		}
-#ifdef DEBUG
-		printf("\n");
-#endif
 
 		// read file/info header
 		_bmp_read_file_header(fh_buf, &bmp->_file_header);
 		_bmp_read_info_header(ih_buf, &bmp->_info_header);
 
 #ifdef DEBUG
+		printf("\n");
 		_bmp_print_file_header(&bmp->_file_header);
 		_bmp_print_info_header(&bmp->_info_header);
 #endif
@@ -400,6 +436,12 @@ bitmap_t* bmp_read(const char* bmp_name)
 		bmp->width = bmp_get_image_width(bmp);
 		bmp->height = bmp_get_image_height(bmp);
 		bmp->data_size = bmp_get_image_size(bmp);
+		bmp->row_size = _bmp_get_row_size(bmp->width,
+				bmp->_info_header._bit_count);
+
+#ifdef DEBUG
+		printf("row_size: %lu\n", bmp->row_size);
+#endif
 		return bmp;
 	}
 	else
@@ -446,7 +488,10 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 		bmp->data_size = size;
 		bmp->width = width;
 		bmp->height = height;
+		bmp->row_size = _bmp_get_row_size(bmp->width,
+				bmp->_info_header._bit_count);
 
+		// copy data into bitmap data
 		for (i = 0 ; i < size ; i ++)
 		{
 			((uchar_t*)bmp->data)[i] = ((uchar_t*) data)[i];
@@ -487,10 +532,47 @@ bool_t bmp_set_width(bitmap_t* bmp, long_t width)
 {
 	if (bmp)
 	{
+		size_t orig_row_size = bmp->row_size;
+		size_t new_row_size = 0;
+		size_t new_size = 0;
+		size_t x, y;
+
+		// update the width
 		bmp->width = width;
 		bmp->_info_header._width = width;
-		// TODO
-		// need to implement data expansion
+		new_row_size = _bmp_get_row_size(bmp->width,
+				bmp->_info_header._bit_count);
+		new_size = new_row_size * bmp->height;
+
+#ifdef DEBUG
+		printf("new_row_size: %lu\n", new_row_size);
+#endif
+
+		void* new_data = malloc(new_size);
+		memset(new_data, 1, new_size);
+
+		for (y = 0 ; y < bmp->height ; y ++)
+		{
+			for(x = 0 ; x < orig_row_size ; x ++)
+			{
+				((uchar_t*)new_data)[y*new_row_size+x] =
+						((uchar_t*)bmp->data)[y*orig_row_size+x];
+			}
+		}
+		// update other useful fields
+		// free the old data
+		free(bmp->data);
+		bmp->data = new_data;
+		bmp->_info_header._size_image = new_size;
+		bmp->_file_header._size = new_size + bmp->_file_header._offbit;
+		bmp->row_size = new_row_size;
+		bmp->data_size = new_size;
+
+#ifdef DEBUG
+		_bmp_print_file_header(&bmp->_file_header);
+		_bmp_print_info_header(&bmp->_info_header);
+		_bmp_print_data(bmp->data, bmp->data_size);
+#endif
 		return true;
 	}
 	else
