@@ -686,6 +686,32 @@ bool_t bmp_set_color_important(bitmap_t* bmp, dword_t color_important)
 	}
 }
 
+bool_t bmp_set_data(bitmap_t* bmp, void* data, size_t size)
+{
+	if (bmp)
+	{
+		if (size >= bmp->data_size)
+		{
+			size_t i;
+			for (i = 0 ; i < bmp->data_size ; i ++)
+			{
+				((uchar_t*)bmp->data)[i] = ((uchar_t*)data)[i];
+			}
+			return true;
+		}
+		else
+		{
+			msg_error("input data size not large enough");
+			return false;
+		}
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
+	}
+}
+
 void bmp_destroy(bitmap_t* bmp)
 {
 	if (bmp)

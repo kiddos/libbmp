@@ -258,7 +258,7 @@ bool_t bmp_set_x_pixel_per_meter(bitmap_t* bmp, long_t xpels_per_meter);
 bool_t bmp_set_y_pixel_per_meter(bitmap_t* bmp, long_t ypels_per_meter);
 bool_t bmp_set_color_used(bitmap_t* bmp, dword_t color_used);
 bool_t bmp_set_color_important(bitmap_t* bmp, dword_t color_important);
-bool_t bmp_set_data(bitmap_t* bmp, void* data);
+bool_t bmp_set_data(bitmap_t* bmp, void* data, size_t size);
 void bmp_destroy(bitmap_t* bmp);
 void bmp_write(bitmap_t* bmp, const char* bmp_name);
 
