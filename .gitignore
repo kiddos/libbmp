@@ -6,3 +6,5 @@ test_*
 *.jpg
 test*
 images
+*.so
+*.dll
