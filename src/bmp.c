@@ -312,11 +312,11 @@ void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih)
 	}
 }
 
-void* bmp_get_image_data(bitmap_t* bmp)
+uchar_t* bmp_get_image_data(bitmap_t* bmp)
 {
 	if (bmp)
 	{
-		return bmp->data;
+		return (uchar_t*)bmp->data;
 	}
 	else
 	{
@@ -573,6 +573,19 @@ bool_t bmp_set_width(bitmap_t* bmp, long_t width)
 		_bmp_print_info_header(&bmp->_info_header);
 		_bmp_print_data(bmp->data, bmp->data_size);
 #endif
+		return true;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
+	}
+}
+
+bool_t bmp_set_height(bitmap_t* bmp, long_t height)
+{
+	if (bmp)
+	{
 		return true;
 	}
 	else
