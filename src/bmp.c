@@ -159,18 +159,26 @@ void _bmp_read_data(void* src, void* dst, size_t size)
 	}
 }
 
-void _bmp_print_data(void* data, size_t size)
+void _bmp_print_data(void* data, size_t row_size, size_t height)
 {
-	size_t i;
+	size_t x, y;
 	if (data)
 	{
 		printf("data:\n");
-		for (i = 0 ; i < size * 0.01 ; i ++)
+		for (y = 0 ; y < 1 ; y ++)
 		{
-			if (i % 30 == 0) printf("\n");
-			printf("%4d", ((uchar_t*)data)[i]);
+			for (x = 0 ; x < row_size ; x ++)
+			{
+				printf("%4d", ((uchar_t*)data)[(height-y-1)*row_size+x]);
+			}
+			printf("\n");
 		}
-		printf("\n");
+		/*for (i = 0 ; i < size * 0.01 ; i ++)*/
+		/*{*/
+			/*if (i % 30 == 0) printf("\n");*/
+			/*printf("%4d", ((uchar_t*)data)[i]);*/
+		/*}*/
+		/*printf("\n");*/
 	}
 	else
 	{
@@ -386,7 +394,7 @@ bitmap_t* bmp_read(const char* bmp_name)
 	if (file)
 	{
 		bitmap_t* bmp = (bitmap_t*) malloc(sizeof(bitmap_t));
-		size_t i;
+		size_t i, x, y;
 		char fh_buf[1024] = {'\0'};
 		char ih_buf[1024] = {'\0'};
 
@@ -419,29 +427,32 @@ bitmap_t* bmp_read(const char* bmp_name)
 		_bmp_print_info_header(&bmp->_info_header);
 #endif
 
-		size_t size = _bmp_get_data_size(&bmp->_file_header);
-		bmp->data = malloc(size);
-
-		// read data
-		for (i = 0 ; i < size ; i ++)
-		{
-			((uchar_t*)bmp->data)[i] = fgetc(file);
-		}
-
-#ifdef DEBUG
-		_bmp_print_data(bmp->data, size);
-#endif
-
 		// fill in other useful members
 		bmp->width = bmp_get_image_width(bmp);
 		bmp->height = bmp_get_image_height(bmp);
 		bmp->data_size = bmp_get_image_size(bmp);
 		bmp->row_size = _bmp_get_row_size(bmp->width,
 				bmp->_info_header._bit_count);
-
 #ifdef DEBUG
 		printf("row_size: %lu\n", bmp->row_size);
 #endif
+
+		size_t size = _bmp_get_data_size(&bmp->_file_header);
+		bmp->data = malloc(size);
+
+		// read data
+		for (y = 0 ; y < bmp->height ; y ++)
+		{
+			for (x = 0 ; x < bmp->row_size ; x ++)
+			{
+				((uchar_t*)bmp->data)[(bmp->height-y-1)*bmp->row_size+x] =
+						fgetc(file);
+			}
+		}
+#ifdef DEBUG
+		_bmp_print_data(bmp->data, bmp->row_size, bmp->height);
+#endif
+
 		return bmp;
 	}
 	else
@@ -533,23 +544,25 @@ bool_t bmp_set_width(bitmap_t* bmp, long_t width)
 	if (bmp)
 	{
 		size_t orig_row_size = bmp->row_size;
-		size_t new_row_size = 0;
-		size_t new_size = 0;
+		size_t new_row_size = _bmp_get_row_size(width,
+				bmp->_info_header._bit_count);
+		size_t new_size = new_row_size * bmp->height;
 		size_t x, y;
 
-		// update the width
+		// update useful fields
 		bmp->width = width;
 		bmp->_info_header._width = width;
-		new_row_size = _bmp_get_row_size(bmp->width,
-				bmp->_info_header._bit_count);
-		new_size = new_row_size * bmp->height;
+		bmp->_info_header._size_image = new_size;
+		bmp->_file_header._size = new_size + bmp->_file_header._offbit;
+		bmp->row_size = new_row_size;
+		bmp->data_size = new_size;
 
 #ifdef DEBUG
 		printf("new_row_size: %lu\n", new_row_size);
 #endif
 
 		void* new_data = malloc(new_size);
-		memset(new_data, 1, new_size);
+		memset(new_data, 0, new_size);
 
 		for (y = 0 ; y < bmp->height ; y ++)
 		{
@@ -559,19 +572,14 @@ bool_t bmp_set_width(bitmap_t* bmp, long_t width)
 						((uchar_t*)bmp->data)[y*orig_row_size+x];
 			}
 		}
-		// update other useful fields
 		// free the old data
 		free(bmp->data);
 		bmp->data = new_data;
-		bmp->_info_header._size_image = new_size;
-		bmp->_file_header._size = new_size + bmp->_file_header._offbit;
-		bmp->row_size = new_row_size;
-		bmp->data_size = new_size;
 
 #ifdef DEBUG
 		_bmp_print_file_header(&bmp->_file_header);
 		_bmp_print_info_header(&bmp->_info_header);
-		_bmp_print_data(bmp->data, bmp->data_size);
+		_bmp_print_data(bmp->data, bmp->row_size, bmp->height);
 #endif
 		return true;
 	}
@@ -586,12 +594,49 @@ bool_t bmp_set_height(bitmap_t* bmp, long_t height)
 {
 	if (bmp)
 	{
+		long_t orig_height = bmp->height;
+		size_t new_size = height * bmp->row_size;
+		size_t x, y;
+
+		// update the fields
+		bmp->height = height;
+		bmp->_info_header._height = height;
+		bmp->_info_header._size_image = new_size;
+		bmp->_file_header._size = new_size +
+				bmp->_file_header._offbit;
+		bmp->data_size = new_size;
+
+		void* new_data = malloc(new_size);
+		memset(new_data, 0, new_size);
+		for (y = 0 ; y < orig_height ; y ++)
+		{
+			for (x = 0 ; x < bmp->row_size ; x ++)
+			{
+				((uchar_t*)new_data)[y*bmp->row_size+x] =
+						((uchar_t*)bmp->data)[y*bmp->row_size+x];
+			}
+		}
+		// free the old data
+		free(bmp->data);
+		bmp->data = new_data;
 		return true;
 	}
 	else
 	{
 		msg_error("input bitmap null pointer");
 		return false;
+	}
+}
+
+void bmp_destroy(bitmap_t* bmp)
+{
+	if (bmp)
+	{
+		if (bmp->data)
+		{
+			free(bmp->data);
+		}
+		free(bmp);
 	}
 }
 
@@ -607,12 +652,21 @@ void bmp_write(bitmap_t* bmp, const char* bmp_name)
 			_bmp_write_file_header(&bmp->_file_header, file);
 			_bmp_write_info_header(&bmp->_info_header, file);
 
-			size_t data_size = _bmp_get_data_size(&bmp->_file_header);
-			size_t i;
-			for (i = 0 ; i < data_size ; i ++)
+			/*size_t data_size = _bmp_get_data_size(&bmp->_file_header);*/
+			size_t x, y;
+
+			for (y = 0 ; y < bmp->height ; y ++)
 			{
-				fputc(((uchar_t*)bmp->data)[i], file);
+				for (x = 0 ; x < bmp->row_size ; x ++)
+				{
+					fputc(((uchar_t*)bmp->data)[
+							(bmp->height-y-1)*bmp->row_size+x], file);
+				}
 			}
+			/*for (i = 0 ; i < data_size ; i ++)*/
+			/*{*/
+				/*fputc(((uchar_t*)bmp->data)[i], file);*/
+			/*}*/
 
 			fclose(file);
 		}
