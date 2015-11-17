@@ -482,6 +482,7 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 		// bitmap info header
 		bmp->_info_header._size = BITMAP_INFO_HEADER_SIZE;
 		bmp->_info_header._width = width;
+		bmp->_info_header._height = height;
 		bmp->_info_header._planes = 1;
 		// use default compression RGB
 		bmp->_info_header._compression = BITMAP_COMPRESSION_RGB;
@@ -503,6 +504,7 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 				bmp->_info_header._bit_count);
 
 		// copy data into bitmap data
+		bmp->data = malloc(size);
 		for (i = 0 ; i < size ; i ++)
 		{
 			((uchar_t*)bmp->data)[i] = ((uchar_t*) data)[i];
@@ -619,6 +621,62 @@ bool_t bmp_set_height(bitmap_t* bmp, long_t height)
 		// free the old data
 		free(bmp->data);
 		bmp->data = new_data;
+		return true;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
+	}
+}
+
+bool_t bmp_set_x_pixel_per_meter(bitmap_t* bmp, long_t xpels_per_meter)
+{
+	if (bmp)
+	{
+		bmp->_info_header._xpels_per_meter = xpels_per_meter;
+		return true;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
+	}
+}
+
+bool_t bmp_set_y_pixel_per_meter(bitmap_t* bmp, long_t ypels_per_meter)
+{
+	if (bmp)
+	{
+		bmp->_info_header._ypels_per_meter = ypels_per_meter;
+		return true;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
+	}
+}
+
+bool_t bmp_set_color_used(bitmap_t* bmp, dword_t color_used)
+{
+	if (bmp)
+	{
+		bmp->_info_header._color_used = color_used;
+		return true;
+	}
+	else
+	{
+		msg_error("input bitmap null pointer");
+		return false;
+	}
+}
+
+bool_t bmp_set_color_important(bitmap_t* bmp, dword_t color_important)
+{
+	if (bmp)
+	{
+		bmp->_info_header._color_important = color_important;
 		return true;
 	}
 	else
