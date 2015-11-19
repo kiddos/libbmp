@@ -8,3 +8,10 @@ test*
 images
 *.so
 *.dll
+*.cache
+*.log
+*.lo
+stamp-h1
+*.la
+*.deps
+*.libs
