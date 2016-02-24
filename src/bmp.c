@@ -487,12 +487,12 @@ bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
 		// use default compression RGB
 		bmp->_info_header._compression = BITMAP_COMPRESSION_RGB;
 		bmp->_info_header._bit_count = bit_count;
-		bmp->_info_header._size_image = size;
+		bmp->_info_header._size_image = 0;
 		// use default 0 for x/y pixels per meter
 		bmp->_info_header._xpels_per_meter = 0;
 		bmp->_info_header._ypels_per_meter = 0;
 		// use default 256 color
-		bmp->_info_header._color_used = 256;
+		bmp->_info_header._color_used = 0;
 		// default all color required
 		bmp->_info_header._color_important = 0;
 
