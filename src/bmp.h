@@ -13,7 +13,7 @@ typedef unsigned char bool_t;
 #define TRUE 1
 #define false 0
 #define FALSE 0
-typedef unsigned char uchar_t;
+typedef unsigned char byte_t;
 
 #if defined(__unix__)
 // for unix like
@@ -32,44 +32,39 @@ typedef unsigned int long32_t;
 
 #define BITMAP_TYPE 19778
 
-typedef struct bitmap_file_header_t
-{
-	word_t _type;
-	dword_t _size;
-	word_t _reserved1;
-	word_t _reserved2;
-	dword_t _offbit;
+typedef struct bitmap_file_header_t {
+  byte_t type[2];
+  dword_t size;
+  word_t reserved1;
+  word_t reserved2;
+  dword_t offbit;
 } bitmap_file_header_t;
 
 #define BITMAP_FILE_HEADER_SIZE (3*sizeof(word_t)+2*sizeof(dword_t))
 
-typedef struct bitmap_info_header_t
-{
-	dword_t _size;
-	long_t _width;
-	long_t _height;
-	word_t _planes;
-	word_t _bit_count;
-	dword_t _compression;
-	dword_t _size_image;
-	long_t _xpels_per_meter;
-	long_t _ypels_per_meter;
-	dword_t _color_used;
-	dword_t _color_important;
+typedef struct bitmap_info_header_t {
+  dword_t size;
+  long_t width;
+  long_t height;
+  word_t planes;
+  word_t bit_count;
+  dword_t compression;
+  dword_t size_image;
+  long_t xpels_per_meter;
+  long_t ypels_per_meter;
+  dword_t color_used;
+  dword_t color_important;
 } bitmap_info_header_t;
 
 #define BITMAP_INFO_HEADER_SIZE \
-		(2*sizeof(word_t)+4*sizeof(long32_t)+5*sizeof(dword_t))
+    (2*sizeof(word_t)+4*sizeof(long32_t)+5*sizeof(dword_t))
 
-typedef struct bitmap_t
-{
-	bitmap_file_header_t _file_header;
-	bitmap_info_header_t _info_header;
-	size_t data_size;
-	size_t row_size;
-	long_t width;
-	long_t height;
-	void* data;
+typedef struct bitmap_t {
+  bitmap_file_header_t file_header;
+  bitmap_info_header_t info_header;
+  size_t color_map_size;
+  byte_t *color_map;
+  byte_t *color_data;
 } bitmap_t, bitmap;
 
 /***
@@ -170,17 +165,15 @@ typedef struct bitmap_t
  *		bits set in each DWORD mask must be contiguous and
  *		should not overlap the bits of another mask.
  *		All the bits in the pixel do not need to be used.
- *
  */
-typedef enum
-{
-	BITMAP_BIT_COUNT0    =   0,
-	BITMAP_BIT_COUNT1    =   1,
-	BITMAP_BIT_COUNT4    =   4,
-	BITMAP_BIT_COUNT8    =   8,
-	BITMAP_BIT_COUNT16   =   16,
-	BITMAP_BIT_COUNT24   =   24,
-	BITMAP_BIT_COUNT32   =   32
+typedef enum {
+  BITMAP_BIT_COUNT0    =   0,
+  BITMAP_BIT_COUNT1    =   1,
+  BITMAP_BIT_COUNT4    =   4,
+  BITMAP_BIT_COUNT8    =   8,
+  BITMAP_BIT_COUNT16   =   16,
+  BITMAP_BIT_COUNT24   =   24,
+  BITMAP_BIT_COUNT32   =   32
 } bit_count_t;
 
 /*** Compression types
@@ -208,58 +201,55 @@ typedef enum
  *
  * PNG:		Indicates that the image is a PNG image.
  */
+
 // TODO
-// there should be more compression type
 // only support RGB for now
-typedef enum
-{
-	BITMAP_COMPRESSION_RGB         =   0,
-	BITMAP_COMPRESSION_RLE8        =   0,
-	BITMAP_COMPRESSION_RLE4        =   0,
-	BITMAP_COMPRESSION_BITFILEDS   =   0,
-	BITMAP_COMPRESSION_JPG         =   0,
-	BITMAP_COMPRESSION_PNG         =   0
+typedef enum {
+  BITMAP_COMPRESSION_RGB         =   0,
+  BITMAP_COMPRESSION_RLE8        =   0,
+  BITMAP_COMPRESSION_RLE4        =   0,
+  BITMAP_COMPRESSION_BITFILEDS   =   0,
+  BITMAP_COMPRESSION_JPG         =   0,
+  BITMAP_COMPRESSION_PNG         =   0
 } compression_t;
 
-void _bmp_read_file_header(void* content, bitmap_file_header_t* fh);
-void _bmp_write_file_header(bitmap_file_header_t* fh, FILE* file);
-void _bmp_print_file_header(bitmap_file_header_t* header);
-void _bmp_read_info_header(void* content, bitmap_info_header_t* ih);
-void _bmp_write_info_header(bitmap_info_header_t* ih, FILE* file);
-void _bmp_print_info_header(bitmap_info_header_t* header);
-void _bmp_read_data(void* content, void* dst, size_t size);
-void _bmp_print_data(void* data, size_t row_size, size_t height);
-long_t _bmp_get_data_size(bitmap_file_header_t* fh);
-long_t _bmp_get_offset_size(bitmap_file_header_t* fh);
+void bmp_print_file_header(const bitmap_t *bmp);
+void bmp_print_info_header(const bitmap_t *bmp);
+void bmp_print_color_map(const bitmap_t *bmp);
+void bmp_print_color_data(const bitmap_t *bmp);
 
-long_t _bmp_get_image_bit_count(bitmap_t* bmp);
-long_t _bmp_get_image_x_pixels_per_meter(bitmap_t* bmp);
-long_t _bmp_get_image_y_pixels_per_meter(bitmap_t* bmp);
+/* bitmap get functions */
+long_t bmp_get_color_map_size(const bitmap_t* bmp);
+long_t bmp_get_color_data_size(const bitmap_t* bmp);
+long_t bmp_get_image_bit_count(const bitmap_t* bmp);
+long_t bmp_get_image_x_pixels_per_meter(const bitmap_t* bmp);
+long_t bmp_get_image_y_pixels_per_meter(const bitmap_t* bmp);
+long_t bmp_get_image_size(const bitmap_t* bmp);
+long_t bmp_get_image_width(const bitmap_t* bmp);
+long_t bmp_get_image_height(const bitmap_t* bmp);
 
-long_t bmp_get_image_size(bitmap_t* bmp);
-long_t bmp_get_image_overhead(bitmap_t* bmp);
-long_t bmp_get_image_width(bitmap_t* bmp);
-long_t bmp_get_image_height(bitmap_t* bmp);
+void bmp_get_image_file_header(const bitmap_t* bmp, bitmap_file_header_t* fh);
+void bmp_get_image_info_header(const bitmap_t* bmp, bitmap_info_header_t* ih);
+byte_t* bmp_get_color_data(const bitmap_t* bmp);
+void bmp_copy_color_data(const bitmap_t* bmp, byte_t* color_data, size_t *data_size);
+void bmp_copy_color_map(const bitmap_t* bmp, byte_t* color_map, size_t *data_size);
 
-void bmp_get_image_file_header(bitmap_t* bmp, bitmap_file_header_t* fh);
-void bmp_get_image_info_header(bitmap_t* bmp, bitmap_info_header_t* ih);
-uchar_t* bmp_get_image_data(bitmap_t* bmp);
-void bmp_copy_image_data(bitmap_t* bmp, void* data, size_t data_size);
+/* set functions */
+bool_t bmp_set_width(bitmap_t* bmp, const long_t width);
+bool_t bmp_set_height(bitmap_t* bmp, const long_t height);
+bool_t bmp_set_bit_count(bitmap_t* bmp, const bit_count_t bit_count);
+bool_t bmp_set_compression(bitmap_t* bmp, const compression_t compression);
+bool_t bmp_set_x_pixel_per_meter(bitmap_t* bmp, const long_t xpels_per_meter);
+bool_t bmp_set_y_pixel_per_meter(bitmap_t* bmp, const long_t ypels_per_meter);
+bool_t bmp_set_color_used(bitmap_t* bmp, const dword_t color_used);
+bool_t bmp_set_color_important(bitmap_t* bmp, const dword_t color_important);
+bool_t bmp_set_data(bitmap_t* bmp, const byte_t* data, size_t size);
 
-bitmap_t* bmp_read(const char* bmp_name);
-bitmap_t* bmp_create(long_t width, long_t height, word_t bit_count,
-		void* data, size_t size);
-bitmap_t* bmp_produce_copy(bitmap_t* bmp);
-bool_t bmp_set_width(bitmap_t* bmp, long_t width);
-bool_t bmp_set_height(bitmap_t* bmp, long_t height);
-bool_t bmp_set_bit_count(bitmap_t* bmp, bit_count_t bit_count);
-bool_t bmp_set_compression(bitmap_t* bmp, compression_t compression);
-bool_t bmp_set_x_pixel_per_meter(bitmap_t* bmp, long_t xpels_per_meter);
-bool_t bmp_set_y_pixel_per_meter(bitmap_t* bmp, long_t ypels_per_meter);
-bool_t bmp_set_color_used(bitmap_t* bmp, dword_t color_used);
-bool_t bmp_set_color_important(bitmap_t* bmp, dword_t color_important);
-bool_t bmp_set_data(bitmap_t* bmp, void* data, size_t size);
+bitmap_t* bmp_read(const char* const bmp_name);
+bitmap_t* bmp_create(const long_t width, const long_t height,
+                     word_t bit_count, byte_t* data, const size_t size);
+bitmap_t* bmp_produce_copy(const bitmap_t* bmp);
 void bmp_destroy(bitmap_t* bmp);
-void bmp_write(bitmap_t* bmp, const char* bmp_name);
+void bmp_write(const bitmap_t* bmp, const char* const bmp_name);
 
 #endif /* end of include guard: BMP_H */
