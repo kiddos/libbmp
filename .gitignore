@@ -1,17 +1,15 @@
+# ignore vim temp files
 *.swp
+
+# ignore objects
 *.o
-test_*
+# ignore test images
 *.bmp
 *.png
 *.jpg
-test*
-images
-*.so
-*.dll
-*.cache
-*.log
-*.lo
-stamp-h1
-*.la
-*.deps
-*.libs
+
+# ignore test
+test/images/*
+
+# ignore build
+build/*
