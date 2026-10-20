@@ -1,3 +1,1 @@
-set(SRC bmp.c msg.c)
-
-add_library(libbmp ${SRC})
+add_library(libbmp bmp.c msg.c)
